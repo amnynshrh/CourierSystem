@@ -773,7 +773,7 @@ public class NewMain {
     } catch (InterruptedException e) {
         System.out.println("Payment processing interrupted.");
     }
-}1
+}
 
     
     // ==================== STAFF DASHBOARD ====================
