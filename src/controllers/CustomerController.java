@@ -45,9 +45,10 @@ public class CustomerController {
                     case 1: createParcel(customer); break;
                     case 2: viewMyParcels(customer); break;
                     case 3: trackParcel(customer); break;
-                    case 4: makePayment(customer); break;
-                    case 5: customer.displayCustomerInfo(); break;
-                    case 6: 
+                    case 4: trackParcelById (customer); break;
+                    case 5: makePayment(customer); break;
+                    case 6: customer.displayCustomerInfo(); break;
+                    case 7: 
                         logout = true;
                         customer.logout();
                         MenuView.showSuccess("Logged out successfully!");
@@ -238,52 +239,159 @@ private String generateParcelId(ArrayList<Parcel> parcels) {
     }
     
     private void trackParcel(Customer customer) {
-        MenuView.showSectionHeader("TRACK PARCEL");
-        
-        // Show customer's parcels
-        ArrayList<Parcel> customerParcels = new ArrayList<>();
-        int count = 1;
-        
-        System.out.println("Your parcels:");
-        for (Parcel parcel : parcels) {
-            if (parcel.getSender().getUserId().equals(customer.getUserId())) {
-                System.out.println(count + ". " + parcel.getParcelId() + 
-                                 " - " + parcel.getDescription() + 
-                                 " (" + parcel.getStatus() + ")");
-                customerParcels.add(parcel);
-                count++;
+    MenuView.showSectionHeader("TRACK ALL MY PARCELS");
+    
+    ArrayList<Parcel> customerParcels = new ArrayList<>();
+    int count = 1;
+    
+    System.out.println("Parcels sent by you OR addressed to you:");
+    System.out.println("----------------------------------------");
+    
+    for (Parcel parcel : parcels) {
+        if (parcel.getSender().getUserId().equals(customer.getUserId()) ||
+            parcel.getReceiver().getUserId().equals(customer.getUserId())) {
+            
+            String role = parcel.getSender().getUserId().equals(customer.getUserId()) ? 
+                         "📤 Sending" : "📥 Receiving";
+            
+            System.out.println(count + ". " + parcel.getParcelId() + 
+                             " - " + parcel.getDescription() + 
+                             " (" + role + ", " + parcel.getStatus() + ")");
+            customerParcels.add(parcel);
+            count++;
+        }
+    }
+    
+    if (customerParcels.isEmpty()) {
+        System.out.println("\n📭 You have no parcels to track.");
+        System.out.println("Create a new parcel or ask someone to send you one!");
+        return;
+    }
+    
+    System.out.print("\nSelect parcel to view details (1-" + customerParcels.size() + "): ");
+    int choice = scanner.nextInt();
+    scanner.nextLine();
+    
+    if (choice < 1 || choice > customerParcels.size()) {
+        MenuView.showError("Invalid selection!");
+        return;
+    }
+    
+    Parcel selectedParcel = customerParcels.get(choice - 1);
+    
+    // Display detailed information
+    CustomerView.showParcelSummary(selectedParcel);
+    
+    // Show delivery info if exists
+    for (Delivery delivery : deliveries) {
+        if (delivery.getParcel().getParcelId().equals(selectedParcel.getParcelId())) {
+            System.out.println("\n--- DELIVERY INFORMATION ---");
+            delivery.displayDeliveryInfo();
+        }
+    }
+}
+    
+    private void trackParcelById(Customer customer) {
+    MenuView.showSectionHeader("TRACK PARCEL BY ID");
+    
+    System.out.println("\nYou can track any parcel addressed to you.");
+    System.out.print("Enter Parcel ID (e.g., P001): ");
+    String parcelId = scanner.nextLine();
+    
+    // Find the parcel
+    Parcel parcel = null;
+    for (Parcel p : parcels) {
+        if (p.getParcelId().equals(parcelId)) {
+            parcel = p;
+            break;
+        }
+    }
+    
+    if (parcel == null) {
+        MenuView.showError("Parcel not found!");
+        return;
+    }
+    
+    // SECURITY: Check if customer is sender OR receiver
+    boolean isSender = parcel.getSender().getUserId().equals(customer.getUserId());
+    boolean isReceiver = parcel.getReceiver().getUserId().equals(customer.getUserId());
+    
+    if (!isSender && !isReceiver) {
+        MenuView.showError("❌ ACCESS DENIED: This parcel is not addressed to you.");
+        System.out.println("You can only track parcels you sent or are receiving.");
+        return;
+    }
+    
+    // Display parcel information
+    System.out.println("\n" + "=".repeat(50));
+    System.out.println("        PARCEL TRACKING INFORMATION");
+    System.out.println("=".repeat(50));
+    
+    String role = isSender ? "📤 SENDER" : "📥 RECIPIENT";
+    System.out.println("Your Role: " + role);
+    System.out.println();
+    
+    System.out.printf("%-20s: %s\n", "Parcel ID", parcel.getParcelId());
+    System.out.printf("%-20s: %s\n", "Description", parcel.getDescription());
+    System.out.printf("%-20s: %s\n", "Type", parcel.getClass().getSimpleName());
+    System.out.printf("%-20s: %.2f kg\n", "Weight", parcel.getWeight());
+    System.out.printf("%-20s: %s\n", "Dimensions", parcel.getDimensions());
+    System.out.printf("%-20s: RM%.2f\n", "Price", parcel.getPrice());
+    System.out.printf("%-20s: %s\n", "Status", parcel.getStatus());
+    System.out.printf("%-20s: %s\n", "Created Date", parcel.getCreatedDate());
+    
+    System.out.println("\n--- PARTIES INVOLVED ---");
+    System.out.printf("%-20s: %s (%s)\n", "Sender", 
+                     parcel.getSender().getName(), parcel.getSender().getUserId());
+    System.out.printf("%-20s: %s (%s)\n", "Receiver", 
+                     parcel.getReceiver().getName(), parcel.getReceiver().getUserId());
+    
+    // Find delivery information if exists
+    boolean hasDelivery = false;
+    for (Delivery delivery : deliveries) {
+        if (delivery.getParcel().getParcelId().equals(parcelId)) {
+            System.out.println("\n--- DELIVERY INFORMATION ---");
+            System.out.printf("%-20s: %s\n", "Delivery ID", delivery.getDeliveryId());
+            System.out.printf("%-20s: %s\n", "Delivery Status", delivery.getStatus());
+            System.out.printf("%-20s: %s\n", "Route", delivery.getRoute());
+            System.out.printf("%-20s: %s\n", "Est. Delivery", delivery.getEstimatedTime());
+            
+            if (delivery.getDeliveryPerson() != null) {
+                System.out.printf("%-20s: %s\n", "Delivery Staff", 
+                                delivery.getDeliveryPerson().getName());
             }
+            
+            if (delivery.getAssignedVehicle() != null) {
+                System.out.printf("%-20s: %s (%s)\n", "Vehicle", 
+                                delivery.getAssignedVehicle().getVehicleId(),
+                                delivery.getAssignedVehicle().getVehicleType());
+            }
+            hasDelivery = true;
+            break;
         }
-        
-        if (customerParcels.isEmpty()) {
-            CustomerView.showNoParcelsMessage();
-            return;
-        }
-        
-        System.out.print("\nSelect parcel to track (1-" + customerParcels.size() + "): ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        
-        if (choice < 1 || choice > customerParcels.size()) {
-            MenuView.showError("Invalid selection!");
-            return;
-        }
-        
-        Parcel selectedParcel = customerParcels.get(choice - 1);
-        CustomerView.showParcelSummary(selectedParcel);
-        
-        // Show delivery info if exists
+    }
+    
+    if (!hasDelivery) {
+        System.out.println("\n⚠️  Delivery not yet assigned. Please check back later.");
+    }
+    
+    System.out.println("=".repeat(50));
+    
+    // Show delivery progress
+    if (hasDelivery) {
         for (Delivery delivery : deliveries) {
-            if (delivery.getParcel().getParcelId().equals(selectedParcel.getParcelId())) {
-                delivery.displayDeliveryInfo();
+            if (delivery.getParcel().getParcelId().equals(parcelId)) {
+                views.DeliveryView.displayDeliveryProgress(delivery.getStatus());
+                break;
             }
         }
     }
+}
     
     private void makePayment(Customer customer) {
         CustomerView.showPaymentHeader();
         
-        // Find unpaid parcels
+        // Find unp1aid parcels
         ArrayList<Parcel> unpaidParcels = new ArrayList<>();
         int count = 1;
         

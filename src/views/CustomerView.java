@@ -18,16 +18,17 @@ public class CustomerView {
         System.out.println("=".repeat(50));
     }
     
-    public static void showCustomerMenu() {
-        System.out.println("\n--- CUSTOMER OPTIONS ---");
-        System.out.println("1. Send New Parcel");
+   public static void showCustomerMenu() {
+    System.out.println("\n--- CUSTOMER OPTIONS ---");
+    System.out.println("1. Send New Parcel");
         System.out.println("2. View My Parcels");
-        System.out.println("3. Track Parcel");
-        System.out.println("4. Make Payment");
-        System.out.println("5. View My Profile");
-        System.out.println("6. Logout");
-        System.out.print("\nSelect option (1-6): ");
-    }
+        System.out.println("3. Track My Parcels");
+    System.out.println("4. Track Parcel by ID");
+    System.out.println("5. Make Payment");
+    System.out.println("6. View My Profile");
+    System.out.println("7. Logout");
+    System.out.print("\nSelect option (1-7): ");
+   } 
     
     public static void showParcelTypes() {
         System.out.println("\n--- AVAILABLE PARCEL TYPES ---");
