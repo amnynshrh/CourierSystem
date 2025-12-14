@@ -28,7 +28,7 @@ public class Vehicle {
         if (isAvailable) {
             isAvailable = false;
             this.currentDeliveryId = deliveryId;  // Track which delivery
-            System.out.println("Vehicle " + vehicleId + " assigned to Delivery " + deliveryId);
+           // System.out.println("Vehicle " + vehicleId + " assigned to Delivery " + deliveryId);
         } else {
             System.out.println("Vehicle " + vehicleId + " is currently assigned to Delivery " + 
                              currentDeliveryId);

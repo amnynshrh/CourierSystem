@@ -14,11 +14,12 @@ public class CustomerController {
     private ArrayList<Delivery> deliveries;
     private ArrayList<Payment> payments;
     private ArrayList<User> users;
+    private ArrayList<Vehicle> vehicles;
     
     public CustomerController(Scanner scanner, ParcelService parcelService, 
                             PaymentService paymentService, ArrayList<Parcel> parcels,
                             ArrayList<Delivery> deliveries, ArrayList<Payment> payments,
-                            ArrayList<User> users) {
+                            ArrayList<User> users, ArrayList<Vehicle> vehicles) {
         this.scanner = scanner;
         this.parcelService = parcelService;
         this.paymentService = paymentService;
@@ -26,6 +27,7 @@ public class CustomerController {
         this.deliveries = deliveries;
         this.payments = payments;
         this.users = users;
+        this.vehicles = vehicles;
     }
     
     public void showMenu(Customer customer) {
@@ -60,84 +62,111 @@ public class CustomerController {
         }
     }
     
-    private void createParcel(Customer sender) {
-        CustomerView.showParcelCreationHeader();
-        CustomerView.showParcelTypes();
-        
-        System.out.print("\nEnter parcel type (1=STANDARD, 2=EXPRESS, 3=INTERNATIONAL): ");
-        int typeChoice = scanner.nextInt();
-        scanner.nextLine();
-        
-        String parcelType = "";
-        switch (typeChoice) {
-            case 1: parcelType = "STANDARD"; break;
-            case 2: parcelType = "EXPRESS"; break;
-            case 3: parcelType = "INTERNATIONAL"; break;
-            default: 
-                MenuView.showError("Invalid type! Using STANDARD.");
-                parcelType = "STANDARD";
-        }
-        
-        String parcelId = "P" + (parcels.size() + 1000);
-        
-        System.out.print("Enter parcel description: ");
-        String description = scanner.nextLine();
-        
-        System.out.print("Enter weight (kg): ");
-        double weight = scanner.nextDouble();
-        scanner.nextLine();
-        
-        if (!Validator.isValidWeight(weight)) {
-            MenuView.showError("Invalid weight! Must be between 0.1 and 100 kg");
-            return;
-        }
-        
-        System.out.print("Enter dimensions (e.g., 30x20x15): ");
-        String dimensions = scanner.nextLine();
-        
-        if (!Validator.isValidDimensions(dimensions)) {
-            MenuView.showError("Invalid dimensions! Use format: LxWxH");
-            return;
-        }
-        
-        // Select recipient
-        System.out.println("\n--- SELECT RECIPIENT ---");
-        System.out.print("Enter recipient Customer ID (e.g., C002): ");
-        String recipientId = scanner.nextLine();
-        
-        Customer recipient = findCustomerById(recipientId);
-        if (recipient == null) {
-            MenuView.showError("Recipient not found! Please register the recipient first.");
-            return;
-        }
-        
-        String additionalInfo = "";
-        if (parcelType.equals("INTERNATIONAL")) {
-            System.out.print("Enter destination country: ");
-            additionalInfo = scanner.nextLine();
-        }
-        
-        // Use FACTORY PATTERN to create parcel
-        MenuView.showLoading("Creating parcel");
-        Parcel newParcel = ParcelFactory.createParcel(
-            parcelType, parcelId, sender, recipient, 
-            weight, dimensions, description, additionalInfo
-        );
-        
-        // Add to collections
-        parcels.add(newParcel);
-        parcelService.addParcel(newParcel);
-        
-        // Create delivery assignment
-        assignDelivery(newParcel);
-        
-        // Add loyalty points
-        sender.addLoyaltyPoints(10);
-        
-        // Show success
-        CustomerView.showParcelSummary(newParcel);
-        MenuView.showSuccess("Parcel created successfully! +10 loyalty points added.");
+   private void createParcel(Customer sender) {
+    CustomerView.showParcelCreationHeader();
+    CustomerView.showParcelTypes();
+    
+    System.out.print("\nEnter parcel type (1=STANDARD, 2=EXPRESS, 3=INTERNATIONAL): ");
+    int typeChoice = scanner.nextInt();
+    scanner.nextLine();
+    
+    String parcelType = "";
+    switch (typeChoice) {
+        case 1: parcelType = "STANDARD"; break;
+        case 2: parcelType = "EXPRESS"; break;
+        case 3: parcelType = "INTERNATIONAL"; break;
+        default: 
+            MenuView.showError("Invalid type! Using STANDARD.");
+            parcelType = "STANDARD";
     }
+    
+    // ✅ FIXED: Generate sequential IDs (P003, P004, etc.)
+    String parcelId = generateParcelId(parcels);
+    
+    System.out.print("Enter parcel description: ");
+    String description = scanner.nextLine();
+    
+    System.out.print("Enter weight (kg): ");
+    double weight = scanner.nextDouble();
+    scanner.nextLine();
+    
+    if (!Validator.isValidWeight(weight)) {
+        MenuView.showError("Invalid weight! Must be between 0.1 and 100 kg");
+        return;
+    }
+    
+    System.out.print("Enter dimensions (e.g., 30x20x15): ");
+    String dimensions = scanner.nextLine();
+    
+    if (!Validator.isValidDimensions(dimensions)) {
+        MenuView.showError("Invalid dimensions! Use format: LxWxH");
+        return;
+    }
+    
+    // Select recipient
+    System.out.println("\n--- SELECT RECIPIENT ---");
+    System.out.print("Enter recipient Customer ID (e.g., C002): ");
+    String recipientId = scanner.nextLine();
+    
+    Customer recipient = findCustomerById(recipientId);
+    if (recipient == null) {
+        MenuView.showError("Recipient not found! Please register the recipient first.");
+        return;
+    }
+    
+    String additionalInfo = "";
+    if (parcelType.equals("INTERNATIONAL")) {
+        System.out.print("Enter destination country: ");
+        additionalInfo = scanner.nextLine();
+    }
+    
+    // Use FACTORY PATTERN to create parcel
+    MenuView.showLoading("Creating parcel");
+    Parcel newParcel = ParcelFactory.createParcel(
+        parcelType, parcelId, sender, recipient, 
+        weight, dimensions, description, additionalInfo
+    );
+    
+    // Add to system
+    parcelService.addParcel(newParcel);
+    
+    // Create delivery assignment
+    assignDelivery(newParcel);
+    
+    // Add loyalty points
+    sender.addLoyaltyPoints(10);
+    
+    // Show success
+    CustomerView.showParcelSummary(newParcel);
+    MenuView.showSuccess("Parcel created successfully! +10 loyalty points added.");
+}
+
+// ✅ NEW METHOD: Generate sequential parcel IDs
+private String generateParcelId(ArrayList<Parcel> parcels) {
+    if (parcels.isEmpty()) {
+        return "P001"; // Start from P001
+    }
+    
+    // Find highest existing parcel ID
+    int maxId = 0;
+    for (Parcel parcel : parcels) {
+        String id = parcel.getParcelId();
+        if (id.startsWith("P")) {
+            try {
+                int num = Integer.parseInt(id.substring(1));
+                if (num > maxId) {
+                    maxId = num;
+                }
+            } catch (NumberFormatException e) {
+                // Ignore non-numeric IDs
+            }
+        }
+    }
+    
+    // Generate next ID with leading zeros
+    int nextId = maxId + 1;
+    return String.format("P%03d", nextId); // P001, P002, ..., P010, P011, etc.
+}
     
     private Customer findCustomerById(String id) {
         for (User user : users) {
@@ -149,27 +178,39 @@ public class CustomerController {
     }
     
     private void assignDelivery(Parcel parcel) {
-        // Find available staff
-        Staff availableStaff = null;
-        for (User user : users) {
-            if (user instanceof Staff) {
-                Staff staff = (Staff) user;
-                if (staff.isAvailable()) {
-                    availableStaff = staff;
-                    break;
-                }
+    // Find available staff
+    Staff availableStaff = null;
+    for (User user : users) {
+        if (user instanceof Staff) {
+            Staff staff = (Staff) user;
+            if (staff.isAvailable()) {
+                availableStaff = staff;
+                break;
+            }
+        }
+    }
+    
+    if (availableStaff != null) {
+        // ✅ FIXED: Generate sequential delivery ID (D001, D002, D003...)
+        String deliveryId = generateDeliveryId(deliveries);
+        
+        Delivery newDelivery = new Delivery(deliveryId, parcel, availableStaff);
+        deliveries.add(newDelivery);
+        
+        // Find available vehicle
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.isAvailable() && vehicle.canCarry(parcel.getWeight())) {
+                vehicle.assignVehicle(deliveryId);
+                newDelivery.setAssignedVehicle(vehicle);
+                break;
             }
         }
         
-        if (availableStaff != null) {
-            String deliveryId = "D" + (deliveries.size() + 1000);
-            Delivery newDelivery = new Delivery(deliveryId, parcel, availableStaff);
-            deliveries.add(newDelivery);
-            MenuView.showSuccess("Delivery assigned to: " + availableStaff.getName());
-        } else {
-            MenuView.showError("No staff available. Delivery will be assigned later.");
-        }
+        MenuView.showSuccess("Delivery assigned to: " + availableStaff.getName());
+    } else {
+        MenuView.showError("No staff available. Delivery will be assigned later.");
     }
+}
     
     private void viewMyParcels(Customer customer) {
         MenuView.showSectionHeader("MY PARCELS");
@@ -234,7 +275,6 @@ public class CustomerController {
         // Show delivery info if exists
         for (Delivery delivery : deliveries) {
             if (delivery.getParcel().getParcelId().equals(selectedParcel.getParcelId())) {
-                System.out.println("\n--- DELIVERY INFORMATION ---");
                 delivery.displayDeliveryInfo();
             }
         }
@@ -317,4 +357,30 @@ public class CustomerController {
         
         MenuView.showSuccess("Payment successful! Parcel is now being processed.");
     }
+    
+    private String generateDeliveryId(ArrayList<Delivery> deliveries) {
+    if (deliveries.isEmpty()) {
+        return "D001";
+    }
+    
+    // Find highest existing delivery ID
+    int maxId = 0;
+    for (Delivery delivery : deliveries) {
+        String id = delivery.getDeliveryId();
+        if (id.startsWith("D")) {
+            try {
+                int num = Integer.parseInt(id.substring(1));
+                if (num > maxId) {
+                    maxId = num;
+                }
+            } catch (NumberFormatException e) {
+                // Skip non-numeric IDs
+            }
+        }
+    }
+    
+    // Generate next ID with 3 digits
+    int nextId = maxId + 1;
+    return String.format("D%03d", nextId); // D001, D002, ..., D010, D011
+}
 }

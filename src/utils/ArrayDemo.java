@@ -1,100 +1,121 @@
 package utils;
 
-import models.Parcel;
-
 public class ArrayDemo {
     
-    // Primitive arrays (for rubric)
-    private static final double[] SHIPPING_RATES = {5.0, 8.0, 12.0, 15.0, 20.0, 25.0};
-    private static final int[] DELIVERY_DAYS = {1, 2, 3, 5, 7, 10};
-    private static final String[] COUNTRIES = {"Malaysia", "Singapore", "Thailand", 
-                                               "Indonesia", "Philippines", "Vietnam"};
-    
-    // Object array
-    private Parcel[] parcelArchive = new Parcel[100];
-    private int archiveCount = 0;
-    
+    // SINGLE comprehensive array demonstration method
     public static void demonstrateArrays() {
-        System.out.println("\n" + "=".repeat(50));
-        System.out.println("ARRAY DEMONSTRATION (For OOP Rubric)");
-        System.out.println("=".repeat(50));
+        System.out.println("\n" + "=".repeat(60));
+        System.out.println("      COMPREHENSIVE ARRAY DEMONSTRATION");
+        System.out.println("=".repeat(60));
         
-        // 1. Primitive array - double[]
-        System.out.println("\n1. PRIMITIVE ARRAY (double[] SHIPPING_RATES):");
-        System.out.println("   These are the standard shipping rates:");
-        for (int i = 0; i < SHIPPING_RATES.length; i++) {
-            System.out.printf("   Rate %d: RM%.2f\n", i + 1, SHIPPING_RATES[i]);
+        // 1. PRIMITIVE ARRAYS
+        System.out.println("\n1️⃣  PRIMITIVE ARRAYS:");
+        
+        // int array - delivery statistics
+        int[] deliveryStats = {150, 45, 12, 8, 25}; // [total, delivered, pending, returned, express]
+        System.out.println("   int[] deliveryStats = {total, delivered, pending, returned, express};");
+        System.out.println("   deliveryStats.length = " + deliveryStats.length);
+        System.out.println("   deliveryStats[0] = " + deliveryStats[0] + " (total deliveries)");
+        System.out.println("   deliveryStats[1] = " + deliveryStats[1] + " (delivered)");
+        System.out.println("   deliveryStats[2] = " + deliveryStats[2] + " (pending)");
+        
+        // double array - shipping rates
+        double[] shippingRates = {5.0, 8.0, 12.0, 15.0, 20.0, 25.0};
+        System.out.println("\n   double[] shippingRates = {5.0, 8.0, 12.0, 15.0, 20.0, 25.0};");
+        System.out.print("   Shipping rates: ");
+        for (int i = 0; i < shippingRates.length; i++) {
+            System.out.printf("RM%.1f ", shippingRates[i]);
         }
+        System.out.println("\n   Array length: " + shippingRates.length);
         
-        // 2. Primitive array - int[]
-        System.out.println("\n2. PRIMITIVE ARRAY (int[] DELIVERY_DAYS):");
-        System.out.println("   Standard delivery days for different services:");
-        for (int i = 0; i < DELIVERY_DAYS.length; i++) {
-            System.out.println("   Service " + (i + 1) + ": " + DELIVERY_DAYS[i] + " days");
-        }
+        // 2. STRING ARRAYS
+        System.out.println("\n\n2️⃣  STRING ARRAYS:");
         
-        // 3. String array
-        System.out.println("\n3. STRING ARRAY (String[] COUNTRIES):");
-        System.out.println("   Countries we deliver to:");
-        for (String country : COUNTRIES) {
-            System.out.println("   - " + country);
-        }
+        String[] cities = {"Kuala Lumpur", "Petaling Jaya", "Shah Alam", "Subang Jaya", "Klang"};
+        System.out.println("   String[] cities = {\"Kuala Lumpur\", \"Petaling Jaya\", ...};");
+        System.out.println("   cities.length = " + cities.length);
         
-        // 4. Array operations
-        System.out.println("\n4. ARRAY OPERATIONS:");
-        System.out.println("   SHIPPING_RATES length: " + SHIPPING_RATES.length);
-        System.out.println("   First shipping rate: RM" + SHIPPING_RATES[0]);
-        System.out.println("   Last shipping rate: RM" + SHIPPING_RATES[SHIPPING_RATES.length - 1]);
-        System.out.println("   Total countries: " + COUNTRIES.length);
+        // String methods on array elements
+        System.out.println("\n   String methods on array elements:");
+        System.out.println("   cities[0].toUpperCase() = " + cities[0].toUpperCase());
+        System.out.println("   cities[0].length() = " + cities[0].length());
+        System.out.println("   cities[0].contains(\"Lumpur\") = " + cities[0].contains("Lumpur"));
+        System.out.println("   cities[0].substring(0, 5) = " + cities[0].substring(0, 5));
         
-        // 5. Multi-dimensional array example
-        System.out.println("\n5. MULTI-DIMENSIONAL ARRAY:");
-        double[][] zoneRates = {
-            {5.0, 8.0, 12.0},   // Zone 1 rates
-            {8.0, 12.0, 18.0},  // Zone 2 rates
-            {12.0, 18.0, 25.0}  // Zone 3 rates
+        // 3. 2D ARRAY (Multi-dimensional)
+        System.out.println("\n\n3️⃣  2D ARRAY (Multi-dimensional):");
+        
+        String[][] deliverySchedule = {
+            {"Monday", "KL Central", "Raju", "8:00 AM"},
+            {"Tuesday", "PJ Area", "Ahmad", "9:00 AM"},
+            {"Wednesday", "Subang", "Siti", "10:00 AM"},
+            {"Thursday", "Shah Alam", "Mei", "11:00 AM"},
+            {"Friday", "Klang", "Ali", "1:00 PM"}
         };
         
-        System.out.println("   Zone-based shipping rates:");
-        for (int i = 0; i < zoneRates.length; i++) {
-            System.out.print("   Zone " + (i + 1) + ": ");
-            for (int j = 0; j < zoneRates[i].length; j++) {
-                System.out.printf("RM%.1f ", zoneRates[i][j]);
-            }
-            System.out.println();
-        }
-    }
-    
-    // Add parcel to archive array
-    public void addToArchive(Parcel parcel) {
-        if (archiveCount < parcelArchive.length) {
-            parcelArchive[archiveCount] = parcel;
-            archiveCount++;
-        }
-    }
-    
-    // Display archive contents
-    public void displayArchive() {
-        System.out.println("\n=== PARCEL ARCHIVE (Object Array) ===");
-        System.out.println("Array size: " + parcelArchive.length);
-        System.out.println("Current count: " + archiveCount);
+        System.out.println("   String[][] deliverySchedule = { ... };");
+        System.out.println("   deliverySchedule.length = " + deliverySchedule.length + " (rows)");
+        System.out.println("   deliverySchedule[0].length = " + deliverySchedule[0].length + " (columns per row)");
         
-        if (archiveCount > 0) {
-            System.out.println("\nFirst 5 parcels in archive:");
-            for (int i = 0; i < Math.min(5, archiveCount); i++) {
-                System.out.println((i + 1) + ". " + parcelArchive[i].getParcelId() + 
-                                 " - " + parcelArchive[i].getClass().getSimpleName());
-            }
+        System.out.println("\n   Delivery Schedule:");
+        System.out.println("   ┌──────────┬──────────────┬──────────┬──────────┐");
+        System.out.println("   │   Day    │    Area      │  Driver  │   Time   │");
+        System.out.println("   ├──────────┼──────────────┼──────────┼──────────┤");
+        for (int i = 0; i < deliverySchedule.length; i++) {
+            System.out.printf("   │ %-8s │ %-12s │ %-8s │ %-8s │\n",
+                deliverySchedule[i][0], deliverySchedule[i][1], 
+                deliverySchedule[i][2], deliverySchedule[i][3]);
         }
-    }
-    
-    // Get archive array
-    public Parcel[] getParcelArchive() {
-        return parcelArchive;
-    }
-    
-    // Get archive count
-    public int getArchiveCount() {
-        return archiveCount;
+        System.out.println("   └──────────┴──────────────┴──────────┴──────────┘");
+        
+        // 4. ARRAY OPERATIONS DEMONSTRATION
+        System.out.println("\n\n4️⃣  ARRAY OPERATIONS:");
+        
+        int[] numbers = {10, 20, 30, 40, 50};
+        System.out.println("   int[] numbers = {10, 20, 30, 40, 50};");
+        
+        // Access element
+        System.out.println("   ✓ Access element: numbers[2] = " + numbers[2]);
+        
+        // Modify element
+        numbers[2] = 35;
+        System.out.println("   ✓ Modify element: numbers[2] = 35");
+        
+        // Iterate with for loop
+        System.out.print("   ✓ Iterate with for loop: ");
+        for (int i = 0; i < numbers.length; i++) {
+            System.out.print(numbers[i] + " ");
+        }
+        
+        // Iterate with enhanced for loop
+        System.out.print("\n   ✓ Iterate with enhanced for: ");
+        for (int num : numbers) {
+            System.out.print(num + " ");
+        }
+        
+        // Find maximum value
+        int max = numbers[0];
+        for (int num : numbers) {
+            if (num > max) max = num;
+        }
+        System.out.println("\n   ✓ Find maximum value: " + max);
+        
+        // Calculate sum
+        int sum = 0;
+        for (int num : numbers) {
+            sum += num;
+        }
+        System.out.println("   ✓ Calculate sum: " + sum);
+        
+        // Copy array
+        int[] copy = new int[numbers.length];
+        for (int i = 0; i < numbers.length; i++) {
+            copy[i] = numbers[i];
+        }
+        System.out.println("   ✓ Copy array: int[] copy = new int[numbers.length]");
+        
+        System.out.println("\n" + "=".repeat(60));
+        System.out.println("        END OF COMPREHENSIVE ARRAY DEMONSTRATION");
+        System.out.println("=".repeat(60));
     }
 }

@@ -48,9 +48,9 @@ public class Delivery {
     
      public void setAssignedVehicle(Vehicle vehicle) {
         this.assignedVehicle = vehicle;
-        if (vehicle != null) {
-            System.out.println("Vehicle " + vehicle.getVehicleId() + " assigned to this delivery.");
-        }
+       // if (vehicle != null) {
+       //     System.out.println("Vehicle " + vehicle.getVehicleId() + " assigned to this delivery.");
+       // }
     }
     
     public void displayDeliveryInfo() {
